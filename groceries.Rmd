@@ -1,0 +1,78 @@
+---
+title: "groceries"
+author: "Stephen Allen"
+date: "August 19, 2015"
+output: html_document
+---
+
+
+First we will simply load in the appropriate data.  
+
+```{r}
+library(arules)
+library(Matrix)
+```
+
+```{r}
+groceries <- read.transactions("groceries.txt", format = "basket", sep = ",")
+```
+
+Next we will generate rules with a confidence level greater than 0.5.  To get a good number of these rules, we will use the support level 0.011.  Here we can get some very predictive insights, but also insights that apply only to a small subset of cases.  This creates 12 rules.
+
+```{r}
+groceriesrules = apriori(groceries, parameter=list(support=.011, confidence=.5, maxlen=9))
+```
+
+Let us inspect those rules to see what they are.  We only get predictions for two common items, whole milk and 'other vegetables'. As we can see, with lifts that have a minimum of approximately 2, we do get significant insight from these.
+
+```{r}
+inspect(groceriesrules)
+```
+
+However, there is no reason that the minimum confidence must be 0.5.  If we could get rules with a significant lift and higher support than the ones above, those rules may also be very valuable even if confidence is less than 0.5.
+
+This time we will generate rules with a support of .05 so that 1 in 20 baskets include the items associated with the rule.  To get a good number of rules, we thus lower the confidence level to .15.  This was what I saw as a balance between enough support to be relevant to many baskets and high enough confidence so as to be a potentially valuable insight.
+
+```{r}
+groceriesrules2 = apriori(groceries, parameter= list(support=.05, confidence = .15, maxlen =9))
+```
+
+Upon inspection, these ten rules are much more easily understood than the previous results although confidence and lift are diminished.
+
+The first 4 rules all deal with 4 items that are very common in baskets, sufficiently to surpass the confidence level without any lift!  This tells us nothing more than how frequently these items are purchased and that they are the 4 most common.
+
+The next 6 provide us some lift.  We can see that whole milk and 'other vegetables' are often bought together.  While this confidence is less than 50%, we get more than a 50% improvement in the liklihood of anyone buying one of these items if they buy the other.  Since this is a common basket pair, this may perhaps be a more valuable insight than some that had higher confidence levels but less support.
+
+The relationship between Whole Milk and yogurt is also very similar. The relationship between whole milk and buns does not seem to be quite so strong as the lift is not very high.
+
+```{r}
+inspect(groceriesrules2)
+```
+
+Next, I am also interested in what rules may have a high lift, even if the support and confidence are not so high.  I suspect that these relationships may tell us things that are not as obvious or easily guessed before analysis as some of the inferences one could make from the previous analysis.
+
+To that end, i create a very large set of rules and then will inspect only those with a high lift value.
+
+```{r}
+groceriesrules3 = apriori(groceries, parameter= list(support=.005, confidence = .03, maxlen =9))
+```
+
+Now that we have generated a very large number of rules, let us look at the 8 with the highest lift values.  Here we see a lot more less commonly purchased items than in the previous looks we have taken.
+
+The highest lift relationship is between people who buy ham and white bread.  This very high lift rule, was missing from previous sets because the two are only in a very small number of baskets.  Perhaps too small to be a valuable rule
+
+The most interesting rule here to me is the relationship between root vegetables and herbs.  Though I know it is dangerous to get involved in using anecdotal evidence, but I suspect from my own experience that this relationship might be evidence that product placement is very important and that two items may be bought together simply because they are close to each other.  Or perhaps other people cook with rute vegetables and herbs at the same time and my dietary use of herbs is abnormal.
+
+```{r}
+inspect(subset(groceriesrules3, subset = lift > 3.8))
+```
+
+Having seen that set of rules, I considered that perhaps I should look at striking a balance between support and lift.  For this I look at those rules with lift > 1 and the highest value for lift*sqrt(support).  The squareroot is used because support ranges much smaller than lift ranges large.
+
+The two rules with the highest lift in this lift, which could be called the meat and potatoes rule, shows the kind of relationship that may be very useful in deciding on what promotions to run together.
+
+We also pick up a relationship between other vegetables and root vegetables as well as whole milk and root vegetables that was missed in the previous analysis balancing support and confidence because its support was slightly below the arbitrary support value.  I think it is very interesting.
+
+```{r}
+inspect(subset(groceriesrules3, subset = lift*support^.5 > .38 & lift > 1.01))
+```

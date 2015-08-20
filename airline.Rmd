@@ -1,0 +1,37 @@
+---
+title: "Assignment 2 Part 1"
+author: "Stephen Allen"
+date: "August 19, 2015"
+output: word_document
+---
+
+I took this assignment as an oppportunity to get actionable information for myself as I am likely to be using this airport at some over the next year. Actionable information would be any information that may inlfuence my decision to purchase one given flight versus another.
+
+To me the most interesting question is of the 3 main carriers, American Airlines (AA), Continental (CO) and Southwest (WN), who is most likely to get me to my desitnation on time.  To this end I considered cancellations and long delays (those that take longer than 15 minutes) and how often they occur for each airline.
+
+
+```{r, echo=FALSE}
+library(ggplot2)
+
+ABIA = read.csv('data/ABIA.csv', header=TRUE)
+ABIA[is.na(ABIA)]=0
+
+WN=which(ABIA$UniqueCarrier=="WN")
+Trunc_WN=WN[1:9000]
+AA=which(ABIA$UniqueCarrier=="AA")
+Trunc_AA=AA[1:9000]
+CO=which(ABIA$UniqueCarrier=="CO")
+Trunc_CO=CO[1:9000]
+ALL=c(Trunc_WN,Trunc_AA,Trunc_CO)
+ALL_Data=ABIA[ALL,]
+attach(ALL_Data)
+
+CarrierDelay=ALL_Data$CarrierDelay
+LongDelay = ifelse(CancellationCode == "A", "Cancelled", ifelse(CarrierDelay > 15, "Long Delay", "Short or None"))
+
+
+qplot(UniqueCarrier, data=ALL_Data, fill=LongDelay, xlab = "Carrier Code", ylab = "Flight" )
+```
+
+
+I will myself be sticking to my previously preferred airline, Southwest and will be avoiding American Airlines given that relatively very high cancellation rate.
