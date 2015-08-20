@@ -2,7 +2,7 @@
 title: "Assignment 2 Part 1"
 author: "Stephen Allen"
 date: "August 19, 2015"
-output: word_document
+output: html_document
 ---
 
 I took this assignment as an oppportunity to get actionable information for myself as I am likely to be using this airport at some over the next year. Actionable information would be any information that may inlfuence my decision to purchase one given flight versus another.
@@ -13,7 +13,7 @@ To me the most interesting question is of the 3 main carriers, American Airlines
 ```{r, echo=FALSE}
 library(ggplot2)
 
-ABIA = read.csv('data/ABIA.csv', header=TRUE)
+ABIA = read.csv('ABIA.csv', header=TRUE)
 ABIA[is.na(ABIA)]=0
 
 WN=which(ABIA$UniqueCarrier=="WN")
